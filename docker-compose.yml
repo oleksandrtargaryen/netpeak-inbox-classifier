@@ -1,0 +1,9 @@
+services:
+  classifier:
+    build: .
+    env_file: .env
+    # write output.json / report.md back to the host
+    volumes:
+      - ./:/app/out
+    working_dir: /app
+    command: ["--input", "data/input_requests.csv", "--output", "out/output.json", "--report", "out/report.md"]
