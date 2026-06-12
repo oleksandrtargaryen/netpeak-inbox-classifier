@@ -1,0 +1,8 @@
+google-genai>=0.3.0
+pydantic>=2.5
+python-dotenv>=1.0
+# optional integrations
+gspread>=6.0
+google-auth>=2.27
+# tests
+pytest>=8.0
