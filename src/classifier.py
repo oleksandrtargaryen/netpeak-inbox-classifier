@@ -11,7 +11,7 @@ from pydantic import ValidationError
 
 from .models import Category, ClassifiedRequest
 
-MODEL = "gemini-2.0-flash"
+MODEL = "gemini-2.5-flash-lite"
 
 # json schema we hand to Gemini's structured output. Kept close to the Pydantic
 # model but without the fields we fill ourselves.

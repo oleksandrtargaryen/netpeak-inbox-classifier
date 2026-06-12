@@ -5,7 +5,7 @@ and extracts structured fields (category, department, priority, summary, request
 whether it needs clarification). Output goes to `output.json` plus a short `report.md` with
 aggregates.
 
-Built for the Netpeak AI Solutions test task. LLM is Google Gemini (`gemini-2.0-flash`),
+Built for the Netpeak AI Solutions test task. LLM is Google Gemini (`gemini-2.5-flash-lite`),
 the free tier is enough.
 
 ## What it does
@@ -92,15 +92,18 @@ style strings collapsing to a real `null` are all enforced there.
   into Pydantic, retry once with the validation error fed back, and if it still fails write a
   fallback record (`parse_error: true`, `needs_clarification: true`). Nothing gets dropped, but
   a fallback record is obviously lower quality than a real classification.
-- **Volume.** 18 rows is trivial. At thousands of rows the bottleneck is the API, not the code.
-  There's concurrency + backoff, but the free tier has per-minute limits, so a big run will
-  slow to a crawl. For real scale you'd want batching, a persistent queue, and result caching
-  (see below). I did not build those.
+- **Volume / free tier.** 18 rows is trivial. At thousands of rows the bottleneck is the API,
+  not the code. The free tier is tight and per-model: `gemini-2.5-flash` gave me only ~20
+  requests/day before a hard `RESOURCE_EXHAUSTED`, which is why the default is
+  `gemini-2.5-flash-lite` (separate, larger quota and plenty fast for classification). There's
+  concurrency + backoff that honours the server's `retryDelay`, but a big run on the free tier
+  will still slow to a crawl. For real scale you'd want batching, a persistent queue, and result
+  caching (see below). I did not build those.
 - **Non-determinism.** Even at `temperature=0` the model isn't perfectly repeatable, and the
   same vague request can land in two plausible categories on different runs. The schema bounds
   *what* it can output, not *which* valid label it picks. I treat the labels as a first pass for
   a human, not ground truth - that's what `confidence` and the clarification list are for.
-- **Cost.** `gemini-2.0-flash` on the free tier is effectively free here. At paid volume the
+- **Cost.** `gemini-2.5-flash-lite` on the free tier is effectively free here. At paid volume the
   cost is one short call per request; the obvious win is caching by a hash of `raw_text` so
   re-runs and near-duplicates don't pay twice. Not implemented yet.
 - **Categories are fixed.** The six categories come from the task. A request that fits none of
